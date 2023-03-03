@@ -1022,7 +1022,7 @@ func hexToUint64(s string) (uint64, error) {
 const DefaultAllocate uint = 9223372036854775807
 
 func parseInt(str string) uint {
-	number, err := strconv.ParseInt(str, 10, 64)
+	number, err := strconv.ParseInt(str, 10, 32)
 	if err != nil {
 		return DefaultAllocate
 	}
