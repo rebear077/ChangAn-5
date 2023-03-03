@@ -1019,22 +1019,15 @@ func hexToUint64(s string) (uint64, error) {
 	return strconv.ParseUint(cleaned, 16, 64)
 }
 
-const DefaultAllocate uint = 256
+const DefaultAllocate uint = 9223372036854775807
 
-func parseAllocateGood2(desired string) uint {
-	parsed, err := strconv.ParseUint(desired, 10, 64)
-	var parsed_int uint
+func parseInt(str string) uint {
+	number, err := strconv.ParseInt(str, 10, 64)
 	if err != nil {
 		return DefaultAllocate
 	}
-	if parsed <= uint64(^uint(0)) {
-		parsed_int = uint(parsed)
-	} else {
-		return DefaultAllocate
-	}
-	return parsed_int
+	return uint(number)
 }
-
 func (hc *channelSession) processEventLogMessage(msg *channelMessage) {
 	var eventLogResponse eventLogResponse
 	err := json.Unmarshal(msg.body, &eventLogResponse)
@@ -1045,15 +1038,15 @@ func (hc *channelSession) processEventLogMessage(msg *channelMessage) {
 	logs := []types.Log{}
 	var nextBlock uint64
 	for _, log := range eventLogResponse.Logs {
-		number, _ := strconv.Atoi(log.BlockNumber)
-		logIndex, err := hexToUint64(log.LogIndex)
-		// logIndex := parseAllocateGood2(log.LogIndex)
+		number, err := strconv.ParseInt(log.BlockNumber, 10, 64)
+		// logIndex, err := hexToUint64(log.LogIndex)
+		logIndex := parseInt(log.LogIndex)
 		if err != nil {
 			logrus.Warnf("unmarshal logIndex failed, err: %v\n", err)
 			return
 		}
-		// txIndex := parseAllocateGood2(log.TransactionIndex)
-		txIndex, err := hexToUint64(log.TransactionIndex)
+		// txIndex, err := hexToUint64(log.TransactionIndex)
+		txIndex := parseInt(log.TransactionIndex)
 		if err != nil {
 			logrus.Warnf("unmarshal TransactionIndex failed, err: %v\n", err)
 			return
@@ -1069,9 +1062,9 @@ func (hc *channelSession) processEventLogMessage(msg *channelMessage) {
 			Data:        data,
 			BlockNumber: uint64(number),
 			TxHash:      common.HexToHash(log.TransactionHash),
-			TxIndex:     uint(txIndex),
+			TxIndex:     txIndex,
 			BlockHash:   common.HexToHash(log.BlockHash),
-			Index:       uint(logIndex),
+			Index:       logIndex,
 			Removed:     false,
 		})
 		nextBlock = uint64(number) + 1
